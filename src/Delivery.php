@@ -14,12 +14,12 @@ use Sabre\Xml\XmlSerializable;
 
 class Delivery implements XmlSerializable, XmlDeserializable
 {
-    private $actualDeliveryDate;
-    private $deliveryLocation;
-    private $deliveryParty;
+    private ?DateTime $actualDeliveryDate = null;
+    private ?Address $deliveryLocation = null;
+    private ?Party $deliveryParty = null;
 
     /**
-     * @return DateTime
+     * @return DateTime|null
      */
     public function getActualDeliveryDate(): ?DateTime
     {
@@ -27,7 +27,7 @@ class Delivery implements XmlSerializable, XmlDeserializable
     }
 
     /**
-     * @param DateTime $actualDeliveryDate
+     * @param DateTime|null $actualDeliveryDate
      * @return static
      */
     public function setActualDeliveryDate(?DateTime $actualDeliveryDate)
@@ -37,7 +37,7 @@ class Delivery implements XmlSerializable, XmlDeserializable
     }
 
     /**
-     * @return Address
+     * @return Address|null
      */
     public function getDeliveryLocation()
     {
@@ -45,17 +45,17 @@ class Delivery implements XmlSerializable, XmlDeserializable
     }
 
     /**
-     * @param Address $deliveryLocation
+     * @param Address|null $deliveryLocation
      * @return static
      */
-    public function setDeliveryLocation($deliveryLocation)
+    public function setDeliveryLocation(?Address $deliveryLocation)
     {
         $this->deliveryLocation = $deliveryLocation;
         return $this;
     }
 
     /**
-     * @return Party
+     * @return Party|null
      */
     public function getDeliveryParty()
     {
@@ -63,10 +63,10 @@ class Delivery implements XmlSerializable, XmlDeserializable
     }
 
     /**
-     * @param Party $deliveryParty
+     * @param Party|null $deliveryParty
      * @return static
      */
-    public function setDeliveryParty($deliveryParty)
+    public function setDeliveryParty(?Party $deliveryParty)
     {
         $this->deliveryParty = $deliveryParty;
         return $this;
@@ -99,17 +99,20 @@ class Delivery implements XmlSerializable, XmlDeserializable
 
     /**
      * The xmlDeserialize method is called during xml reading.
-     * @param Reader $xml
+     * @param Reader $reader
      * @return static
      */
     public static function xmlDeserialize(Reader $reader)
     {
         $keyValues = keyValue($reader);
 
+        $actualDeliveryDate = isset($keyValues[Schema::CBC . 'ActualDeliveryDate'])
+            ? Carbon::parse($keyValues[Schema::CBC . 'ActualDeliveryDate'])->toDateTime()
+            : null;
+
         return (new static())
-            ->setActualDeliveryDate(isset($keyValues[Schema::CBC . 'ActualDeliveryDate']) ? Carbon::parse($keyValues[Schema::CBC . 'ActualDeliveryDate'])->toDateTime() : null)
+            ->setActualDeliveryDate($actualDeliveryDate)
             ->setDeliveryLocation($keyValues[Schema::CAC . 'DeliveryLocation'] ?? null)
-            ->setDeliveryParty($keyValues[Schema::CAC . 'DeliveryParty'] ?? null)
-        ;
+            ->setDeliveryParty($keyValues[Schema::CAC . 'DeliveryParty'] ?? null);
     }
 }

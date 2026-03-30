@@ -14,9 +14,9 @@ use Sabre\Xml\XmlSerializable;
 
 class OrderReference implements XmlSerializable, XmlDeserializable
 {
-    private $id;
-    private $salesOrderId;
-    private $issueDate;
+    private ?string $id = null;
+    private string $salesOrderId;
+    private ?DateTime $issueDate = null;
 
     /**
      * @return string|null
@@ -45,7 +45,7 @@ class OrderReference implements XmlSerializable, XmlDeserializable
     }
 
     /**
-     * @return DateTime
+     * @return DateTime|null
      */
     public function getIssueDate(): ?DateTime
     {
@@ -53,7 +53,7 @@ class OrderReference implements XmlSerializable, XmlDeserializable
     }
 
     /**
-     * @param DateTime $issueDate
+     * @param DateTime|null $issueDate
      * @return static
      */
     public function setIssueDate(?DateTime $issueDate)
@@ -63,7 +63,7 @@ class OrderReference implements XmlSerializable, XmlDeserializable
     }
 
     /**
-     * @param string $salesOrderId
+     * @param string|null $salesOrderId
      * @return static
      */
     public function setSalesOrderId(?string $salesOrderId)
@@ -95,17 +95,20 @@ class OrderReference implements XmlSerializable, XmlDeserializable
 
     /**
      * The xmlDeserialize method is called during xml reading.
-     * @param Reader $xml
+     * @param Reader $reader
      * @return static
      */
     public static function xmlDeserialize(Reader $reader)
     {
         $keyValues = keyValue($reader);
 
+        $issueDate = isset($keyValues[Schema::CBC . 'IssueDate'])
+            ? Carbon::parse($keyValues[Schema::CBC . 'IssueDate'])->toDateTime()
+            : null;
+
         return (new static())
             ->setId($keyValues[Schema::CBC . 'ID'] ?? null)
-            ->setIssueDate(isset($keyValues[Schema::CBC . 'IssueDate']) ? Carbon::parse($keyValues[Schema::CBC . 'IssueDate'])->toDateTime() : null)
-            ->setSalesOrderId($keyValues[Schema::CBC . 'SalesOrderID'] ?? null)
-        ;
+            ->setIssueDate($issueDate)
+            ->setSalesOrderId($keyValues[Schema::CBC . 'SalesOrderID'] ?? null);
     }
 }
